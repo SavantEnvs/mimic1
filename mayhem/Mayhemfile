@@ -1,0 +1,19 @@
+project: savantenvs/mimic1
+target: t2p_synth_fuzzer
+
+# /mayhem/t2p_synth_fuzzer drives mimic1's text-to-speech FRONT END (the same code path as the
+# upstream `t2p` CLI): tokenization, US-English text analysis, CMU lexicon lookup + letter-to-
+# sound rules, phrasing and intonation, over the fuzzer-controlled bytes. The voice's
+# wave_synth_func is a no-op (mirroring upstream's own built-in "no_wave" voice), so no waveform
+# DSP/audio synthesis ever runs — the target stays fast and fully deterministic. See
+# mayhem/t2p_synth_fuzzer.c for the harness and mayhem/build.sh for how it's built.
+#
+# Canonical two-entry seed directive (docs/seed-corpus.md): the server tar is REQUIRED or the
+# corpus never accumulates (#124), and the local path must be the RELATIVE per-target path.
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/t2p_synth_fuzzer/testsuite
+
+cmds:
+  - cmd: /mayhem/t2p_synth_fuzzer
+    libfuzzer: true
